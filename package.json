@@ -1,0 +1,14 @@
+{
+  "name": "task-orbit",
+  "private": true,
+  "version": "1.0.0",
+  "scripts": {
+    "dev": "concurrently \"npm run dev --prefix Server\" \"npm run dev --prefix Client\"",
+    "server": "npm run dev --prefix Server",
+    "client": "npm run dev --prefix Client",
+    "build-client": "npm run build --prefix Client"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

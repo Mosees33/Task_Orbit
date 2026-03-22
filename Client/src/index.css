@@ -1,0 +1,267 @@
+:root {
+  color-scheme: light;
+  font-family: "Trebuchet MS", "Gill Sans", "Segoe UI", sans-serif;
+  background:
+    radial-gradient(circle at top left, rgba(255, 214, 153, 0.9), transparent 30%),
+    radial-gradient(circle at bottom right, rgba(111, 182, 255, 0.35), transparent 32%),
+    linear-gradient(160deg, #f5efe4 0%, #f6f3ec 48%, #e8eef6 100%);
+  color: #1e2430;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  min-width: 320px;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+#root {
+  min-height: 100vh;
+}
+
+.page-shell {
+  width: min(1180px, calc(100% - 2rem));
+  margin: 0 auto;
+  padding: 2rem 0 3rem;
+}
+
+.hero-panel,
+.board-panel,
+.setup-panel,
+.stat-card,
+.task-card {
+  border: 1px solid rgba(30, 36, 48, 0.08);
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(18px);
+  box-shadow: 0 18px 60px rgba(30, 36, 48, 0.08);
+}
+
+.hero-panel {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: flex-start;
+  border-radius: 28px;
+  padding: 2rem;
+  margin-bottom: 1.5rem;
+}
+
+.eyebrow {
+  margin: 0 0 0.75rem;
+  color: #8f4e00;
+  font-size: 0.85rem;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+
+.hero-panel h1,
+.panel-heading h2,
+.column-heading h3,
+.task-card h4,
+.stat-card h2 {
+  font-family: Georgia, "Times New Roman", serif;
+}
+
+.hero-panel h1 {
+  margin: 0;
+  font-size: clamp(2.6rem, 8vw, 4.8rem);
+  line-height: 0.95;
+}
+
+.hero-copy {
+  max-width: 42rem;
+  margin: 1rem 0 0;
+  color: #445064;
+  font-size: 1.05rem;
+  line-height: 1.7;
+}
+
+.hero-chip {
+  min-width: 160px;
+  border-radius: 22px;
+  padding: 1rem 1.2rem;
+  background: #1f3b67;
+  color: #f5f7fb;
+}
+
+.chip-label {
+  display: block;
+  margin-bottom: 0.35rem;
+  opacity: 0.7;
+  font-size: 0.8rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.stats-grid,
+.content-grid,
+.board-columns {
+  display: grid;
+  gap: 1rem;
+}
+
+.stats-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  margin-bottom: 1.5rem;
+}
+
+.stat-card {
+  border-radius: 24px;
+  padding: 1.25rem;
+}
+
+.stat-card p,
+.stat-card span {
+  margin: 0;
+}
+
+.stat-card p {
+  color: #556177;
+}
+
+.stat-card h2 {
+  margin: 0.5rem 0;
+  font-size: 1.6rem;
+}
+
+.stat-card span {
+  color: #3d4658;
+  line-height: 1.5;
+}
+
+.content-grid {
+  grid-template-columns: minmax(0, 1.9fr) minmax(280px, 0.9fr);
+}
+
+.board-panel,
+.setup-panel {
+  border-radius: 28px;
+  padding: 1.5rem;
+}
+
+.panel-heading {
+  margin-bottom: 1rem;
+}
+
+.panel-heading h2 {
+  margin: 0;
+  font-size: 1.8rem;
+}
+
+.panel-heading p {
+  margin: 0.35rem 0 0;
+  color: #586276;
+}
+
+.board-columns {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.column {
+  border-radius: 22px;
+  padding: 1rem;
+  background: rgba(245, 246, 250, 0.85);
+}
+
+.column-heading {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.9rem;
+}
+
+.column-heading h3 {
+  margin: 0;
+  font-size: 1.2rem;
+}
+
+.column-heading span {
+  min-width: 2rem;
+  padding: 0.25rem 0.6rem;
+  border-radius: 999px;
+  background: rgba(31, 59, 103, 0.08);
+  text-align: center;
+  font-weight: 700;
+}
+
+.card-stack {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.task-card {
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+.task-meta {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+  color: #6b7485;
+  font-size: 0.85rem;
+}
+
+.task-card h4 {
+  margin: 0;
+  font-size: 1.15rem;
+}
+
+.checklist {
+  margin: 0;
+  padding-left: 1.2rem;
+  color: #384153;
+  line-height: 1.8;
+}
+
+.endpoint-box,
+.error-banner {
+  margin-top: 1.25rem;
+  border-radius: 18px;
+  padding: 1rem;
+}
+
+.endpoint-box {
+  background: #f4f7fc;
+}
+
+.endpoint-box p {
+  margin: 0 0 0.35rem;
+  color: #6b7485;
+}
+
+.endpoint-box code {
+  font-size: 0.95rem;
+}
+
+.error-banner {
+  background: #fff1ec;
+  color: #8d3415;
+}
+
+@media (max-width: 900px) {
+  .stats-grid,
+  .content-grid,
+  .board-columns {
+    grid-template-columns: 1fr;
+  }
+
+  .hero-panel {
+    flex-direction: column;
+  }
+
+  .hero-chip {
+    width: 100%;
+  }
+}

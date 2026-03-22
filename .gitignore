@@ -1,0 +1,10 @@
+node_modules
+Client/node_modules
+Client/dist
+Server/node_modules
+Server/.env
+Client/.env
+PROJECT_NOTES.md
+Gemini_Generated_Image_*.png
+server_run_test_2/
+task_orbit_run_3/
