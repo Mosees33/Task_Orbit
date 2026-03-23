@@ -1,7 +1,7 @@
 function StatCard({ title, value, detail }) {
   return (
     <article className="stat-card">
-      <p>{title}</p>
+      <p className="stat-title">{title}</p>
       <h2>{value}</h2>
       <span>{detail}</span>
     </article>

@@ -5,30 +5,40 @@ const Task = require("../models/Task");
 const starterTasks = [
     {
         title: "Set up backend routes",
+        description: "Create the first backend route structure for the task API.",
         status: "Done",
         owner: "API",
         priority: "High",
+        dueDate: "2026-03-20T00:00:00.000Z",
     },
     {
         title: "Connect React client to the API",
+        description: "Connect React client to the API for understanding.",
         status: "In Progress",
         owner: "Frontend",
         priority: "High",
+        dueDate: "2026-04-15T00:00:00.000Z",
     },
     {
         title: "Add MongoDB connection string",
+        description: "Add MongoDB connection string to work with database.",
         status: "Backlog",
         owner: "You",
         priority: "Medium",
+        dueDate: "2026-03-10T00:00:00.000Z",
+
     },
 ];
 
 const toTaskPayload = (task) => ({
     id: task._id ? task._id.toString() : task.id,
     title: task.title,
+    description: task.description || "",
     status: task.status,
     owner: task.owner,
     priority: task.priority,
+    dueDate: task.dueDate ? new Date(task.dueDate).toISOString() : null,
+
 });
 
 const getSampleBoard = async (req, res) => {
@@ -60,104 +70,6 @@ const getSampleBoard = async (req, res) => {
     }
 };
 
-const getTasks = async (req, res) => {
-    try{
-        const tasks = await Task.find().sort({ createdAt: -1});
-
-        return res.json({
-            source: "database",
-            message: tasks.length 
-            ? "Tasks loaded from MongoDB."
-            : "No tasks found",
-        tasks: tasks.map(toTaskPayload),
-        });
-    } catch (error){
-        return res.status(500).json({
-            message: "Unable to load tasks.",
-            error: error.message,
-        });
-    }
-};
-
-const createTask = async (req, res) => {
-    try {
-        const { title, status, owner, priority } = req.body;
-
-        const createdTask = await Task.create({
-            title,
-            status,
-            owner,
-            priority,
-        });
-
-        return res.status(201).json({
-            source: "database",
-            message: "Task created successfully.",
-            task: toTaskPayload(createdTask),
-        });
-    }catch (error){
-        return res.status(500).json({
-            message: "Unable to create task.",
-            error: error.message,
-        });
-    }
-};
-
-const updateTask = async (req, res) => {
-    try{
-        const updatedTask = await Task.findByIdAndUpdate(
-            req.params.id,
-            req.body,
-            {
-                new : true,
-                runValidators: true,
-            }
-        );
-
-        if(!updateTask){
-            return res.status(404).json({
-                message: "Task not found.",
-            });
-        }
-        return res.json({
-            source: "database",
-            message: "Task updated successfully.",
-            task: toTaskPayload(updatedTask),
-        });
-    }catch (error){
-        return res.status(500).json({
-            message: "Unable to update task.",
-            error: error.message,
-        });
-    }
-};
-
-const deleteTask = async (req, res) => {
-    try{
-        const deletedTask = await Task.findByIdAndDelete(req.params.id);
-
-        if(!deleteTask) {
-            return res.status(404).json({
-                message: "Task not Found.",
-            });
-        }
-
-        return res.json({
-            source: "database",
-            message: "Task deleted successfully.",
-        });
-    }catch (error) { 
-        return res.status(500).json({
-            message: "Unable to delete task.",
-            error: error.message,
-        });
-    }
-};
-
 module.exports = {
     getSampleBoard,
-    getTasks,
-    createTask,
-    updateTask,
-    deleteTask,
 };
