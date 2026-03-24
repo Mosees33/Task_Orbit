@@ -55,11 +55,12 @@ MONGODB_URI=<Your_MongoDB_Atlas_Connection_String>
 
 
 
-🔮 Future Improvements
-Authentication: Implement JWT-based user login and registration.
+## 🔮 Future Improvements
 
-Analytics: Add visual charts to track task completion rates over time.
+* **Authentication:** Implement JWT-based user login and registration.
 
-Activity Tracking: Enhance logging for granular task history.
+* **Analytics:** Add visual charts to track task completion rates over time.
 
-Deployment: Host the frontend on Vercel and the backend on Render.
+* **Activity Tracking:** Enhance logging for granular task history.
+
+* **Deployment:** Host the frontend on Vercel and the backend on Render.
