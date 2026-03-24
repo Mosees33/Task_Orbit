@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
@@ -7,35 +7,12 @@ import TaskCard from "./components/TaskCard";
 
 const API_URL = import.meta.env.VITE_API_URL || "http://localhost:5000";
 
-const fallbackTasks = [
-  {
-    id: "1",
-    title: "Install project dependencies",
-    status: "Done",
-    owner: "You",
-    priority: "High",
-  },
-  {
-    id: "2",
-    title: "Review the sample folder structure",
-    status: "In Progress",
-    owner: "You",
-    priority: "Medium",
-  },
-  {
-    id: "3",
-    title: "Add your real MongoDB URI",
-    status: "Backlog",
-    owner: "You",
-    priority: "High",
-  },
-];
-
 const order = ["Backlog", "In Progress", "Done"];
 
 function App() {
-  const [health, setHealth] = useState(null);
   const [error, setError] = useState("");
+  const [loading, setLoading] = useState(true);
+  const [submitting, setSubmitting] = useState(false);
   const [tasks, setTasks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -49,6 +26,15 @@ function App() {
     priority: "Medium",
     dueDate: "",
   });
+  const [editingTaskId, setEditingTaskId] = useState(null);
+  const [activityLog, setActivityLog] = useState([
+    'Created task "Build task form"',
+    "Updated task status to In Progress",
+    'Completed task "Connect API"',
+    "Added due date for dashboard redesign",
+  ]);
+
+  const taskFormRef = useRef(null);
 
   useEffect(() => {
     let ignore = false;
@@ -64,21 +50,22 @@ function App() {
           throw new Error("API request failed");
         }
 
-        const [healthData, tasksData] = await Promise.all([
+        const [, tasksData] = await Promise.all([
           healthResponse.json(),
           tasksResponse.json(),
         ]);
 
         if (!ignore) {
-          setHealth(healthData);
           setTasks(tasksData.tasks || []);
+          setLoading(false);
         }
       } catch (fetchError) {
         const message =
           "The frontend loaded, but the API is not reachable yet. Start the server to see live data.";
 
-          setError(message);
-          toast.error(message);
+        setError(message);
+        toast.error(message);
+        setLoading(false);
       }
     };
 
@@ -89,28 +76,33 @@ function App() {
     };
   }, []);
 
-  const displayTasks = tasks.length ? tasks : fallbackTasks;
+  const displayTasks = tasks;
 
   const filteredTasks = displayTasks.filter((task) => {
-    const matchesSearch = task.title.toLowerCase().includes(searchTerm.toLowerCase());
-     
-    const matchesStatus = 
-     statusFilter === "All" || task.status === statusFilter;
+    const matchesSearch = task.title
+      .toLowerCase()
+      .includes(searchTerm.toLowerCase());
 
-    const matchesPriority = 
+    const matchesStatus =
+      statusFilter === "All" || task.status === statusFilter;
+
+    const matchesPriority =
       priorityFilter === "All" || task.priority === priorityFilter;
 
     return matchesSearch && matchesStatus && matchesPriority;
-  
   });
 
   const sortedTasks = [...filteredTasks].sort((firstTask, secondTask) => {
-    if(dueDateSort === "None"){
+    if (dueDateSort === "None") {
       return 0;
     }
 
-    const firstDate = firstTask.dueDate ? new Date(firstTask.dueDate).getTime() : Infinity;
-    const secondDate = secondTask.dueDate ? new Date(secondTask.dueDate).getTime() : Infinity;
+    const firstDate = firstTask.dueDate
+      ? new Date(firstTask.dueDate).getTime()
+      : Infinity;
+    const secondDate = secondTask.dueDate
+      ? new Date(secondTask.dueDate).getTime()
+      : Infinity;
 
     if (dueDateSort === "Earliest") {
       return firstDate - secondDate;
@@ -128,14 +120,14 @@ function App() {
     items: sortedTasks.filter((task) => task.status === status),
   }));
 
-  const totalTasks = displayTasks.length;
-  const completedTasks = displayTasks.filter(
+  const totalTasks = sortedTasks.length;
+  const completedTasks = sortedTasks.filter(
     (task) => task.status === "Done"
   ).length;
-  const inProgressTasks = displayTasks.filter(
+  const inProgressTasks = sortedTasks.filter(
     (task) => task.status === "In Progress"
   ).length;
-  const highPriorityTasks = displayTasks.filter(
+  const highPriorityTasks = sortedTasks.filter(
     (task) => task.priority === "High"
   ).length;
 
@@ -150,24 +142,51 @@ function App() {
 
   const handleSubmit = async (event) => {
     event.preventDefault();
+    setSubmitting(true);
 
     try {
-      const response = await fetch(`${API_URL}/api/tasks`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(formData),
-      });
+      const isEditing = Boolean(editingTaskId);
+
+      const response = await fetch(
+        isEditing
+          ? `${API_URL}/api/tasks/${editingTaskId}`
+          : `${API_URL}/api/tasks`,
+        {
+          method: isEditing ? "PATCH" : "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(formData),
+        }
+      );
 
       const data = await response.json();
 
-      if(!response.ok) {
+      if (!response.ok) {
         throw new Error(data.message || "Failed to create task.");
       }
 
-      setTasks((currentTasks) => [data.task,  ...currentTasks]);
-      toast.success("Task created successfully.");
+      if (isEditing) {
+        setTasks((currentTasks) =>
+          currentTasks.map((task) =>
+            task.id === editingTaskId ? data.task : task
+          )
+        );
+        setActivityLog((currentLog) => [
+          `Updated task "${data.task.title}"`,
+          ...currentLog.slice(0, 3),
+        ]);
+        setError("");
+        toast.success("Task updated successfully.");
+      } else {
+        setTasks((currentTasks) => [data.task, ...currentTasks]);
+        setActivityLog((currentLog) => [
+          `Created task "${data.task.title}"`,
+          ...currentLog.slice(0, 3),
+        ]);
+        setError("");
+        toast.success("Task created successfully.");
+      }
       setFormData({
         title: "",
         description: "",
@@ -176,9 +195,84 @@ function App() {
         priority: "Medium",
         dueDate: "",
       });
-    }catch (submitError) {
+      setEditingTaskId(null);
+      setSubmitting(false);
+    } catch (submitError) {
+      setError(submitError.message);
       toast.error(submitError.message);
+      setSubmitting(false);
     }
+  };
+
+  const handleDeleteTask = async (taskId) => {
+    try {
+      const taskToDelete = tasks.find((task) => task.id === taskId);
+      const response = await fetch(`${API_URL}/api/tasks/${taskId}`, {
+        method: "DELETE",
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.message || "Failed to delete task.");
+      }
+
+      setTasks((currentTasks) =>
+        currentTasks.filter((task) => task.id !== taskId)
+      );
+      setActivityLog((currentLog) => [
+        `Deleted task "${taskToDelete?.title || "Untitled task"}"`,
+        ...currentLog.slice(0, 3),
+      ]);
+      setError("");
+      toast.success("Task deleted successfully.");
+    } catch (deleteError) {
+      setError(deleteError.message);
+      toast.error(deleteError.message);
+    }
+  };
+
+  const handleEditTask = (task) => {
+    setEditingTaskId(task.id);
+    setFormData({
+      title: task.title || "",
+      description: task.description || "",
+      status: task.status || "Backlog",
+      owner: task.owner || "",
+      priority: task.priority || "Medium",
+      dueDate: task.dueDate ? task.dueDate.slice(0, 10) : "",
+    });
+  };
+
+  const handleCancelEdit = () => {
+    setEditingTaskId(null);
+    setFormData({
+      title: "",
+      description: "",
+      status: "Backlog",
+      owner: "",
+      priority: "Medium",
+      dueDate: "",
+    });
+    setError("");
+  };
+
+  const handleGoToAddTask = () => {
+    setEditingTaskId(null);
+    setFormData({
+      title: "",
+      description: "",
+      status: "Backlog",
+      owner: "",
+      priority: "Medium",
+      dueDate: "",
+    });
+    setError("");
+
+    taskFormRef.current?.scrollIntoView({
+      behavior: "smooth",
+      block: "start",
+    });
   };
 
   return (
@@ -213,7 +307,7 @@ function App() {
               value={searchTerm}
               onChange={(event) => setSearchTerm(event.target.value)}
             />
-            <select 
+            <select
               value={statusFilter}
               onChange={(event) => setStatusFilter(event.target.value)}
             >
@@ -221,7 +315,6 @@ function App() {
               <option value="Backlog">Backlog</option>
               <option value="In Progress">In Progress</option>
               <option value="Done">Done</option>
-              
             </select>
 
             <select
@@ -234,7 +327,7 @@ function App() {
               <option value="High">High</option>
             </select>
 
-            <select 
+            <select
               value={dueDateSort}
               onChange={(event) => setDueDateSort(event.target.value)}
             >
@@ -243,9 +336,13 @@ function App() {
               <option value="Latest">Latest First</option>
             </select>
 
-            <button type="button">+ Add Task</button>
+            <button type="button" onClick={handleGoToAddTask}>
+              + Add Task
+            </button>
           </div>
         </section>
+
+        {error && <div className="error-banner">{error}</div>}
 
         <section className="stats-grid">
           <StatCard
@@ -277,34 +374,57 @@ function App() {
               <p>Track tasks by status and monitor real project progress.</p>
             </div>
 
-            <div className="board-columns">
-              {groupedTasks.map((group) => (
-                <div key={group.status} className="column">
-                  <div className="column-heading">
-                    <h3>{group.status}</h3>
-                    <span>{group.items.length}</span>
+            {loading ? (
+              <div className="empty-state">
+                <h3>Loading tasks...</h3>
+                <p>Please wait while the dashboard loads live task data.</p>
+              </div>
+            ) : sortedTasks.length === 0 ? (
+              <div className="empty-state">
+                <h3>No tasks found</h3>
+                <p>
+                  Try changing the search or filters, or create a new task to
+                  get started.
+                </p>
+              </div>
+            ) : (
+              <div className="board-columns">
+                {groupedTasks.map((group) => (
+                  <div key={group.status} className="column">
+                    <div className="column-heading">
+                      <h3>{group.status}</h3>
+                      <span>{group.items.length}</span>
+                    </div>
+                    <div className="card-stack">
+                      {group.items.map((task) => (
+                        <TaskCard
+                          key={task.id}
+                          task={task}
+                          onDelete={handleDeleteTask}
+                          onEdit={handleEditTask}
+                        />
+                      ))}
+                    </div>
                   </div>
-                  <div className="card-stack">
-                    {group.items.map((task) => (
-                      <TaskCard key={task.id} task={task} />
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
+                ))}
+              </div>
+            )}
           </article>
-              
-          <aside className="right-panel">
 
-            <div className="setup-panel">
+          <aside className="right-panel">
+            <div className="setup-panel" ref={taskFormRef}>
               <div className="panel-heading">
-                <h2>Add Task</h2>
-                <p>Create a new task and send it to the live backend.</p>
+                <h2>{editingTaskId ? "Edit Task" : "Add Task"}</h2>
+                <p>
+                  {editingTaskId
+                    ? "Update the selected task and save your changes."
+                    : "Create a new task and add it to the board."}
+                </p>
               </div>
 
               <form className="task-form" onSubmit={handleSubmit}>
-                <input 
-                  type="text" 
+                <input
+                  type="text"
                   name="title"
                   placeholder="Task title"
                   value={formData.title}
@@ -347,14 +467,35 @@ function App() {
                   <option value="High">High</option>
                 </select>
 
-                <input 
+                <input
                   type="date"
                   name="dueDate"
                   value={formData.dueDate}
-                  onChange={handleChange} 
+                  onChange={handleChange}
                 />
 
-                <button type="submit">Create Task</button>
+                <div className="form-actions">
+                  <button type="submit" disabled={submitting}>
+                    {submitting 
+                    ? editingTaskId 
+                      ? "Updating..."
+                      : "Creating..."
+                    : editingTaskId
+                      ? "Update Task"
+                      : "Create Task"}
+                  </button>
+
+                  {editingTaskId && (
+                    <button
+                      type="button"
+                      className="cancel-edit-button"
+                      onClick={handleCancelEdit}
+                      disabled={submitting}
+                    >
+                      Cancel Edit
+                    </button>
+                  )}
+                </div>
               </form>
             </div>
 
@@ -365,10 +506,9 @@ function App() {
               </div>
 
               <ul className="checklist">
-                <li>Created task "Build task form"</li>
-                <li>Updated task status to In Progress</li>
-                <li>Completed task "Connect API"</li>
-                <li>Added due date for dashboard redesign</li>
+                {activityLog.map((activity, index) => (
+                  <li key={`${activity}-${index}`}>{activity}</li>
+                ))}
               </ul>
             </div>
 
@@ -389,7 +529,7 @@ function App() {
         </section>
       </main>
 
-              <ToastContainer position="top-center" autoClose={3000} />
+      <ToastContainer position="top-center" autoClose={3000} />
     </div>
   );
 }

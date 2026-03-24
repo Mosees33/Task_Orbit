@@ -1,4 +1,4 @@
-function TaskCard({ task }) {
+function TaskCard({ task, onDelete, onEdit }) {
   const formattedDueDate = task.dueDate
   ? new Date(task.dueDate).toLocaleDateString()
   : "No due date";
@@ -17,6 +17,22 @@ function TaskCard({ task }) {
       </p>
 
       <p className="task-date">Due: {formattedDueDate}</p>
+
+      <button
+        type="button"
+        className="task-edit-button"
+        onClick={() => onEdit(task)}
+      >
+        Edit
+      </button>
+
+      <button
+        type="button"
+        className="task-delete-button"
+        onClick={() => onDelete(task.id)}
+      >
+        Delete
+      </button>
     </article>
   );
 }
