@@ -27,7 +27,6 @@ This repository uses a monorepo-style structure separating the client and server
 ## Local Setup
 
 1. Install root dependencies:
-```bash
 npm install
 
 
@@ -39,13 +38,11 @@ npm install --prefix Server
 3. Start both the client and server:
 npm run dev
 
-```md
 ## Environment Variables
 
 Create two `.env` files to run this project locally.
 
 ### Client/.env
-```env
 VITE_API_URL=http://localhost:5000
 
 Server/.env
