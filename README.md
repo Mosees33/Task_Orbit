@@ -50,7 +50,6 @@ PORT=5000
 CLIENT_URL=http://localhost:5173
 MONGODB_URI=your_mongodb_connection_string
 
-```md
 ## API Routes
 
 | Method | Endpoint | Description |
