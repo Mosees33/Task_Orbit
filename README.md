@@ -69,5 +69,3 @@ MONGODB_URI=your_mongodb_connection_string
 * **Analytics:** Add visual charts to track task completion rates over time.
 
 * **Activity Tracking:** Enhance logging for granular task history.
-
-* **Deployment:** Host the frontend on Vercel and the backend on Render.
